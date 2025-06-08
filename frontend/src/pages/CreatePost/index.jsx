@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const CATEGORY_OPTIONS = [
   { value: 'painting', label: 'Painting' },
@@ -38,6 +39,8 @@ const validationSchema = Yup.object({
   category: Yup.string().required('Category is required'),
   image: Yup.mixed().required('Image is required'),
 });
+
+const API_URL = 'http://127.0.0.1:8000/api';
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -75,43 +78,33 @@ const CreatePost = () => {
           formData.append('image', values.image);
         }
 
-        // Log request data for debugging
-        console.log('Request data:', {
-          title: values.title.trim(),
-          description: values.description.trim(),
-          price: price,
-          category: values.category,
-          image: values.image,
-        });
+        const response = await axios.post(
+          `${API_URL}/posts/`,
+          formData,
+          {
+            headers: {
+              'Authorization': token,
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
 
-        const response = await fetch('http://127.0.0.1:8000/api/posts/', {
-          method: 'POST',
-          headers: {
-            'Authorization': localStorage.getItem('token'),
-          },
-          body: formData,
-        });
-
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-        if (response.ok) {
+        if (response.status === 201) {
           toast.success('Post created successfully!');
           navigate('/');
         } else {
-          const errorData = await response.json();
-          if (response.status === 401) {
-            toast.error('Session expired. Please login again.');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/login');
-          } else {
-            toast.error(errorData.detail || 'Failed to create post. Please try again.');
-          }
+          toast.error('Failed to create post. Please try again.');
         }
       } catch (error) {
         console.error('Error creating post:', error);
-        toast.error(error.message || 'Failed to create post. Please try again.');
+        if (error.response?.status === 401) {
+          toast.error('Session expired. Please login again.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/login');
+        } else {
+          toast.error(error.response?.data?.detail || 'Failed to create post. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
