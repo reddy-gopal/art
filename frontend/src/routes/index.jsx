@@ -7,6 +7,11 @@ import Home from '../pages/Home';
 import Profile from '../pages/Profile';
 import EditProfile from '../pages/EditProfile';
 import CreatePost from '../pages/CreatePost';
+import EditPost from '../pages/EditPost';
+import CartDetail from '../components/Cart/CartDetail';
+import Checkout from '../components/Checkout/Checkout';
+import OrderList from '../components/Orders/OrderList';
+import AddressForm from '../components/Address/AddressForm';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -34,6 +39,11 @@ const AppRoutes = () => {
         <Route path="/profile/:username" element={<Profile />} />
         <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/create-post" element={<CreatePost />} />
+        <Route path="/edit-post/:postId" element={<EditPost />} />
+        <Route path="/cart" element={<CartDetail />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<OrderList />} />
+        <Route path="/address" element={<AddressForm />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -22,6 +22,7 @@ class Post(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='posts/', blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null= True)
+    is_sold = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

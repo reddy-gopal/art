@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -18,6 +18,9 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
+  Badge,
+  Tooltip,
+  Fade,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,6 +30,9 @@ import {
   Add as AddIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
+  LocalShipping as OrdersIcon,
+  Payment as CheckoutIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { logout } from '../../store/slices/authSlice';
 import { clearUserData } from '../../store/slices/userSlice';
@@ -39,9 +45,20 @@ const Layout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { profile } = useSelector((state) => state.user);
+  const cartItems = useSelector((state) => state.cart?.items || []);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -64,33 +81,66 @@ const Layout = () => {
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/' },
     { text: 'Explore', icon: <ExploreIcon />, path: '/explore' },
-    { text: 'Cart', icon: <CartIcon />, path: '/cart' },
+    { 
+      text: 'Cart', 
+      icon: <Badge badgeContent={cartItems.length} color="error"><CartIcon /></Badge>, 
+      path: '/cart' 
+    },
+    { text: 'Orders', icon: <OrdersIcon />, path: '/orders' },
     { text: 'Create Post', icon: <AddIcon />, path: '/create-post' },
   ];
 
   const drawer = (
     <Box>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
+      <Toolbar sx={{ 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        background: theme.palette.background.paper,
+      }}>
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            fontWeight: 700,
+            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
           Artloom
         </Typography>
       </Toolbar>
-      <List>
+      <List sx={{ mt: 2 }}>
         {menuItems.map((item) => (
           <ListItem
-            component="div"
+            button
             key={item.text}
             onClick={() => navigate(item.path)}
             selected={location.pathname === item.path}
             sx={{
-              cursor: 'pointer',
+              my: 0.5,
+              mx: 1,
+              borderRadius: 2,
+              '&.Mui-selected': {
+                backgroundColor: `${theme.palette.primary.main}15`,
+                color: theme.palette.primary.main,
+                '& .MuiListItemIcon-root': {
+                  color: theme.palette.primary.main,
+                },
+              },
               '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                backgroundColor: `${theme.palette.primary.main}10`,
               },
             }}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
+            <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+            <ListItemText 
+              primary={item.text} 
+              primaryTypographyProps={{
+                fontSize: '0.9rem',
+                fontWeight: location.pathname === item.path ? 600 : 400,
+              }}
+            />
           </ListItem>
         ))}
       </List>
@@ -101,9 +151,14 @@ const Layout = () => {
     <Box sx={{ display: 'flex' }}>
       <AppBar
         position="fixed"
+        color="inherit"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
+          transition: 'all 0.3s ease',
+          boxShadow: scrolled ? '0 4px 20px rgba(0, 0, 0, 0.05)' : 'none',
+          backdropFilter: 'blur(8px)',
+          backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)',
         }}
       >
         <Container maxWidth="xl">
@@ -113,23 +168,56 @@ const Layout = () => {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
+              sx={{ 
+                mr: 2, 
+                display: { sm: 'none' },
+                '&:hover': { transform: 'scale(1.1)' },
+                transition: 'transform 0.2s',
+              }}
             >
               <MenuIcon />
             </IconButton>
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
-            >
-              Artloom
-            </Typography>
 
-            <Box sx={{ flexGrow: 0 }}>
-              <IconButton onClick={handleMenu} sx={{ p: 0 }}>
-                <Avatar alt={profile?.username} src={profile?.avatar} />
-              </IconButton>
+            <Box sx={{ flexGrow: 1 }} />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Tooltip title="Notifications" arrow>
+                <IconButton 
+                  color="inherit" 
+                  sx={{ 
+                    '&:hover': { transform: 'scale(1.1)' },
+                    transition: 'transform 0.2s',
+                  }}
+                >
+                  <Badge badgeContent={3} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Account settings" arrow>
+                <IconButton 
+                  onClick={handleMenu} 
+                  sx={{ 
+                    p: 0,
+                    border: '2px solid transparent',
+                    '&:hover': { 
+                      border: `2px solid ${theme.palette.primary.main}`,
+                    },
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Avatar 
+                    alt={profile?.username} 
+                    src={profile?.avatar}
+                    sx={{ 
+                      width: 40, 
+                      height: 40,
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+
               <Menu
                 anchorEl={anchorEl}
                 anchorOrigin={{
@@ -143,21 +231,41 @@ const Layout = () => {
                 }}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
+                TransitionComponent={Fade}
+                sx={{
+                  '& .MuiPaper-root': {
+                    borderRadius: 2,
+                    minWidth: 180,
+                    boxShadow: theme.shadows[3],
+                  },
+                }}
               >
-                <MenuItem onClick={() => {
-                  handleClose();
-                  navigate('/profile');
-                }}>
+                <MenuItem 
+                  onClick={() => {
+                    handleClose();
+                    navigate('/profile');
+                  }}
+                  sx={{ 
+                    py: 1.5,
+                    '&:hover': { backgroundColor: `${theme.palette.primary.main}10` },
+                  }}
+                >
                   <ListItemIcon>
-                    <PersonIcon fontSize="small" />
+                    <PersonIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  Profile
+                  <Typography variant="body2">Profile</Typography>
                 </MenuItem>
-                <MenuItem onClick={handleLogout}>
+                <MenuItem 
+                  onClick={handleLogout}
+                  sx={{ 
+                    py: 1.5,
+                    '&:hover': { backgroundColor: `${theme.palette.error.main}10` },
+                  }}
+                >
                   <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
+                    <LogoutIcon fontSize="small" color="error" />
                   </ListItemIcon>
-                  Logout
+                  <Typography variant="body2" color="error">Logout</Typography>
                 </MenuItem>
               </Menu>
             </Box>
@@ -174,13 +282,15 @@ const Layout = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
+              borderRight: 'none',
+              boxShadow: '4px 0 8px rgba(0, 0, 0, 0.05)',
             },
           }}
         >
@@ -193,6 +303,9 @@ const Layout = () => {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
+              borderRight: 'none',
+              boxShadow: '4px 0 8px rgba(0, 0, 0, 0.05)',
+              background: theme.palette.background.paper,
             },
           }}
           open
@@ -208,6 +321,8 @@ const Layout = () => {
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           mt: 8,
+          minHeight: '100vh',
+          background: theme.palette.background.default,
         }}
       >
         <Outlet />

@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('artist.urls')),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('ecommerce/', include('ecommerce.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

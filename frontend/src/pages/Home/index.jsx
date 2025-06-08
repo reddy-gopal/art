@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Container,
   Grid,
@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { addToCart } from '../../store/slices/cartSlice';
 
 const API_URL = 'http://127.0.0.1:8000/api';
 
@@ -51,6 +52,7 @@ const Home = () => {
   const [sortBy, setSortBy] = useState('latest');
   const [selectedPost, setSelectedPost] = useState(null);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const dispatch = useDispatch();
 
   const fetchPosts = async () => {
     try {
@@ -165,9 +167,14 @@ const Home = () => {
       .catch(() => toast.error('Failed to copy link'));
   };
 
-  const handlePurchase = (post) => {
-    setSelectedPost(post);
-    setPurchaseDialogOpen(true);
+  const handlePurchase = async (post) => {
+    try {
+      await dispatch(addToCart(post.id)).unwrap();
+      toast.success('Added to cart successfully!');
+      navigate('/cart');
+    } catch (error) {
+      toast.error(error || 'Failed to add to cart');
+    }
   };
 
   const handleConfirmPurchase = async () => {

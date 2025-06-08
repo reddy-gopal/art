@@ -25,11 +25,14 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
   ListItemSecondaryAction,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import {
   Favorite as FavoriteIcon,
@@ -45,6 +48,8 @@ import {
   BookmarkBorder as SavedIcon,
   Timeline as ActivityIcon,
   Close as CloseIcon,
+  MoreVert as MoreVertIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -71,6 +76,9 @@ const Profile = () => {
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const isOwnProfile = !username || username === currentUser?.username;
 
@@ -290,6 +298,62 @@ const Profile = () => {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+  };
+
+  const handlePostMenuOpen = (event, post) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPost(post);
+  };
+
+  const handlePostMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedPost(null);
+  };
+
+  const handleEditPost = () => {
+    handlePostMenuClose();
+    navigate(`/edit-post/${selectedPost.id}`);
+  };
+
+  const handleDeleteDialogOpen = () => {
+    setDeleteDialogOpen(true);
+    handlePostMenuClose();
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setSelectedPost(null);
+  };
+
+  const handleDeletePost = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      await axios.delete(`${API_URL}/posts/${selectedPost.id}/`, {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      toast.success('Post deleted successfully');
+      fetchProfileData(); // Refresh the posts
+      handleDeleteDialogClose();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please login again.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+      } else {
+        toast.error('Failed to delete post. Please try again.');
+      }
+    }
   };
 
   const renderUserInfo = () => (
@@ -708,6 +772,51 @@ const Profile = () => {
                 }}
               />
             }
+            action={
+              isOwnProfile && (
+                <>
+                  <IconButton
+                    onClick={(e) => handlePostMenuOpen(e, post)}
+                    sx={{
+                      '&:hover': { transform: 'scale(1.1)' },
+                      transition: 'transform 0.2s',
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl) && selectedPost?.id === post.id}
+                    onClose={handlePostMenuClose}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  >
+                    <MenuItem 
+                      onClick={handleEditPost}
+                      sx={{ 
+                        gap: 1.5,
+                        py: 1,
+                        '&:hover': { backgroundColor: `${theme.palette.primary.main}10` },
+                      }}
+                    >
+                      <EditIcon fontSize="small" color="primary" />
+                      <Typography>Edit Post</Typography>
+                    </MenuItem>
+                    <MenuItem 
+                      onClick={handleDeleteDialogOpen}
+                      sx={{ 
+                        gap: 1.5,
+                        py: 1,
+                        '&:hover': { backgroundColor: `${theme.palette.error.main}10` },
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" color="error" />
+                      <Typography color="error">Delete Post</Typography>
+                    </MenuItem>
+                  </Menu>
+                </>
+              )
+            }
             title={
               <Typography variant="subtitle1" fontWeight="bold">
                 {post.user?.username}
@@ -816,6 +925,51 @@ const Profile = () => {
           </CardContent>
         </Card>
       ))}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteDialogClose}
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            width: '100%',
+            maxWidth: 400,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>Delete Post</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this post? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 1 }}>
+          <Button
+            onClick={handleDeleteDialogClose}
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeletePost}
+            variant="contained"
+            color="error"
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 
