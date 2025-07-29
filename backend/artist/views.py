@@ -16,6 +16,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework import viewsets
+from django.db.models import Q
 
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -30,6 +31,9 @@ def get_user_data(request):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
 
 class PostListCreateView(ListCreateAPIView):
     serializer_class = PostSerializer
@@ -120,7 +124,11 @@ class CommentListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Comment.objects.all().order_by('-created_at')
+        post_id = self.request.query_params.get('post_id')
+        queryset = Comment.objects.all().order_by('-created_at')
+        if post_id:
+            queryset = queryset.filter(post_id=post_id)
+        return queryset
 
     def perform_create(self, serializer):
         post_id = self.request.data.get('post_id')
@@ -404,6 +412,23 @@ class UserFollowingView(generics.ListAPIView):
             ).exists()
 
         return following
+
+class UserSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        if not query:
+            return Response([])
+
+        users = CustomUser.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).exclude(id=request.user.id)[:10]  # Limit to 10 results
+
+        serializer = UserSerializer(users, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 

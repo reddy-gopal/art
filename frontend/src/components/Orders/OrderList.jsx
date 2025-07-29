@@ -109,30 +109,31 @@ const OrderList = () => {
                 </TableHead>
                 <TableBody>
                   {order.items.map((item) => (
-                    <TableRow key={item.post.id}>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Box
-                            component="img"
-                            src={getImageUrl(item.post.image)}
-                            alt={item.post.title}
-                            sx={{
-                              width: 50,
-                              height: 50,
-                              objectFit: 'cover',
-                              mr: 2,
-                              borderRadius: 1
-                            }}
-                          />
-                          <Typography>{item.post.title}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="right">{item.quantity}</TableCell>
-                      <TableCell align="right">${item.price}</TableCell>
-                      <TableCell align="right">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
+                    <TableRow key={item.post?.id || item.id}>
+  <TableCell>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box
+        component="img"
+        src={getImageUrl(item.post?.image) || '/placeholder.png'}
+        alt={item.post?.title || 'Unknown Product'}
+        sx={{
+          width: 50,
+          height: 50,
+          objectFit: 'cover',
+          mr: 2,
+          borderRadius: 1
+        }}
+      />
+      <Typography>{item.post?.title || 'Unknown Product'}</Typography>
+    </Box>
+  </TableCell>
+  <TableCell align="right">{item.quantity}</TableCell>
+  <TableCell align="right">${item.price}</TableCell>
+  <TableCell align="right">
+    ${(item.price * item.quantity).toFixed(2)}
+  </TableCell>
+</TableRow>
+
                   ))}
                   <TableRow>
                     <TableCell colSpan={3} />

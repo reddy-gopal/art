@@ -93,12 +93,13 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state) => {
         state.loading = false;
+        state.error = null;
         toast.success('Registration successful! Please login.');
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error('Registration failed. Please try again.');
+        toast.error(action.payload?.detail || 'Registration failed. Please try again.');
       });
   },
 });

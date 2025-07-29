@@ -10,6 +10,7 @@ class CustomUser(AbstractUser):
 
 
 class Post(models.Model):
+
     CATEGORY_CHOICES = [
         ('painting', 'Painting'),
         ('sculpture', 'Sculpture'),
@@ -17,6 +18,7 @@ class Post(models.Model):
         ('digital', 'Digital Art'),
         ('other', 'Other'),
     ]
+
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
     description = models.TextField()
@@ -26,8 +28,11 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
     def __str__(self):
         return self.title
+    
+
 class SavePost(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='saved_by_users')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='saved_posts')
@@ -45,8 +50,10 @@ class LikePost(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='liked_posts')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         unique_together = ('post', 'user')
+        
     def __str__(self):
         return self.post.title
 

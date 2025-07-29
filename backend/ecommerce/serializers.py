@@ -5,7 +5,7 @@ from artist.models import Post
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['id', 'title', 'price', 'image']
+        fields = ['id', 'title', 'price', 'image', 'is_sold']
 
 class CartItemSerializer(serializers.ModelSerializer):
     post = PostSerializer()

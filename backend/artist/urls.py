@@ -6,7 +6,7 @@ from .views import (
     CommentListCreateView, CommentDetailView,
     FollowListCreateView, FollowDetailView,
     UserActivityView, login, register, get_user_data,
-    UserFollowersView, UserFollowingView
+    UserFollowersView, UserFollowingView, UserSearchView
 )
 from . import views
 
@@ -30,6 +30,7 @@ urlpatterns = [
     path('users/<str:username>/posts/', views.UserPostsView.as_view(), name='user-posts'),
     path('users/<str:username>/followers/', UserFollowersView.as_view(), name='user-followers'),
     path('users/<str:username>/following/', UserFollowingView.as_view(), name='user-following'),
+    path('users/search/', UserSearchView.as_view(), name='user-search'),
     path('follows/toggle/', views.follow_user, name='follow-user'),
     path('follows/check/<str:username>/', views.check_follow, name='check-follow'),
 ]

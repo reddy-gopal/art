@@ -80,9 +80,16 @@ const Register = () => {
       confirmPassword: '',
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       const { confirmPassword, ...registerData } = values;
-      dispatch(register(registerData));
+      try {
+        await dispatch(register(registerData)).unwrap();
+        // After successful registration, navigate to login
+        navigate('/login');
+      } catch (error) {
+        // Error is already handled by the auth slice
+        console.error('Registration failed:', error);
+      }
     },
   });
 

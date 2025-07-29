@@ -2,13 +2,17 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const API_URL = 'http://127.0.0.1:8000/ecommerce';
+const API_URL = 'http://127.0.0.1:8000/api';
+const ECOMMERCE_URL = 'http://127.0.0.1:8000/ecommerce';
 
 const getAxiosConfig = () => {
   const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
   return {
     headers: {
-      'Authorization': token,
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   };
@@ -18,22 +22,54 @@ export const addToCart = createAsyncThunk(
   'cart/addToCart',
   async (postId, { rejectWithValue }) => {
     try {
+      if (!postId) {
+        throw new Error('Post ID is required');
+      }
+
       const response = await axios.post(
-        `${API_URL}/cart/add/`,
+        `${ECOMMERCE_URL}/cart/add/`,
         { 
-          post: postId,
-          quantity: 1
+          post: postId
         },
         getAxiosConfig()
       );
+
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      // After successful cart addition, fetch the updated post status
+      try {
+        await axios.get(`${API_URL}/posts/${postId}/`, getAxiosConfig());
+      } catch (error) {
+        console.error('Error fetching updated post status:', error);
+      }
+
       return response.data;
     } catch (error) {
+      console.error('Add to cart error:', error.response?.data || error.message);
+      
+      // Handle specific error cases
       if (error.response?.status === 401) {
         toast.error('Session expired. Please login again.');
         localStorage.clear();
         window.location.href = '/login';
+        return rejectWithValue('Session expired');
       }
-      return rejectWithValue(error.response?.data?.detail || 'Failed to add to cart');
+
+      // Handle sold artwork error
+      if (error.response?.data?.error === 'This artwork has already been sold') {
+        toast.error('This artwork has already been sold');
+        return rejectWithValue('Artwork is already sold');
+      }
+
+      // Handle other errors
+      const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.detail || 
+                         error.message || 
+                         'Failed to add to cart';
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -43,7 +79,7 @@ export const removeFromCart = createAsyncThunk(
   async (postId, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/cart/remove/`,
+        `${ECOMMERCE_URL}/cart/remove/`,
         { post_id: postId },
         getAxiosConfig()
       );
@@ -63,7 +99,10 @@ export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/cart/`, getAxiosConfig());
+      const response = await axios.get(
+        `${ECOMMERCE_URL}/cart/`,
+        getAxiosConfig()
+      );
       return response.data;
     } catch (error) {
       if (error.response?.status === 401) {

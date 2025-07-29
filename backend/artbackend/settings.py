@@ -43,9 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'artist',
     'ecommerce',
-    'chat',
     'rest_framework',
-    'notification',
     'oauth2_provider',
     'corsheaders',
 ]
