@@ -18,6 +18,9 @@ import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -30,9 +33,10 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'artist.CustomUser'
+from decouple import config
 
-CLIENT_ID = 'pKqeoZJMhrQzc7vu0e0qhC3b81ZC485fhQLl5SEK'
-CLIENT_SECRET = 'izVTto153mJahASBm399sqGsPttHOLtnKVo3wvmxWOIge2FTjq7yOPWEcHYsw4rRjwpHxfCfVNizgRx1Fe7AgSj5yCk3UaOkrs9hXZZlpbwH3ZZ22aP3ARb8LxfE3672'
+CLIENT_ID = config('CLIENT_ID')
+CLIENT_SECRET = config('CLIENT_SECRET')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
