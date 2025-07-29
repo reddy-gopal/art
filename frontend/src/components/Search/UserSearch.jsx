@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = 'https://artbackend.pythonanywhere.com/api';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({
   width: '100%',

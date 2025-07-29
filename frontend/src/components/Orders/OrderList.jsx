@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const API_URL = 'http://127.0.0.1:8000/ecommerce';
-const BACKEND_URL = 'http://127.0.0.1:8000';
+const API_URL = 'https://artbackend.pythonanywhere.com/ecommerce';
+const BACKEND_URL = 'https://artbackend.pythonanywhere.com';
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);

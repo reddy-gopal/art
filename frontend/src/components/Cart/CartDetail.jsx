@@ -17,8 +17,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const API_URL = 'http://127.0.0.1:8000/ecommerce';
-const BACKEND_URL = 'http://127.0.0.1:8000';
+const API_URL = 'https://artbackend.pythonanywhere.com/ecommerce';
+const BACKEND_URL = 'https://artbackend.pythonanywhere.com';
 
 const CartDetail = () => {
   const [cartItems, setCartItems] = useState([]);

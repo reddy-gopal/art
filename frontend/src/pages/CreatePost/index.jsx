@@ -40,7 +40,7 @@ const validationSchema = Yup.object({
   image: Yup.mixed().required('Image is required'),
 });
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = 'https://artbackend.pythonanywhere.com/api';
 
 const CreatePost = () => {
   const navigate = useNavigate();

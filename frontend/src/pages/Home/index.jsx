@@ -47,7 +47,7 @@ import { fetchComments, addComment } from '../../store/slices/commentSlice';
 import Comment from '../../components/Comment';
 import CommentModal from '../../components/Comment/CommentModal';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = 'https://artbackend.pythonanywhere.com/api';
 
 const Home = () => {
   const navigate = useNavigate();

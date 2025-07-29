@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 
-const API_URL = 'http://127.0.0.1:8000/ecommerce';
+const API_URL = 'https://artbackend.pythonanywhere.com/ecommerce';
 
 // Create a Grid component with default props
 const Grid = (props) => (

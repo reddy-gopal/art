@@ -23,7 +23,7 @@ import {
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = 'https://artbackend.pythonanywhere.com/api';
 
 const EditPost = () => {
   const theme = useTheme();
