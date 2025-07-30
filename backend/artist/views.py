@@ -183,42 +183,55 @@ class UserActivityView(ListCreateAPIView):
             user = get_object_or_404(CustomUser, username=username)
             return UserActivity.objects.filter(user=user).order_by('-timestamp')
         return UserActivity.objects.filter(user=self.request.user).order_by('-timestamp')
+    
+
+from django.conf import settings
+from django.test import RequestFactory
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from oauth2_provider.views import TokenView
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    
+
     if not username or not password:
         return Response(
             {"detail": "Please provide both username and password"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    token_url = 'http://127.0.0.1:8000/o/token/'
-    try:
-        response = requests.post(
-            token_url,
-            data={
-                'grant_type': 'password',
-                'username': username,
-                'password': password,
-                'client_id': settings.CLIENT_ID,
-                'client_secret': settings.CLIENT_SECRET
-            }
-        )
-        if response.status_code == 200:
-            return Response(response.json())
+    # Prepare an internal request for the token endpoint
+    factory = RequestFactory()
+    token_request = factory.post(
+        '/o/token/',
+        {
+            'grant_type': 'password',
+            'username': username,
+            'password': password,
+            'client_id': settings.CLIENT_ID,
+            'client_secret': settings.CLIENT_SECRET,
+        }
+    )
+
+    # Call TokenView internally
+    token_view = TokenView.as_view()
+    token_response = token_view(token_request)
+
+    # If authentication failed, return error
+    if token_response.status_code != 200:
         return Response(
             {"detail": "Invalid credentials"},
             status=status.HTTP_401_UNAUTHORIZED
         )
-    except requests.RequestException:
-        return Response(
-            {"detail": "Authentication service unavailable"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
-        )
+
+    # Return OAuth token JSON
+    return token_response
 
 @api_view(["POST"])
 @permission_classes([AllowAny])

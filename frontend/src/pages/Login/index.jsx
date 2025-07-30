@@ -66,13 +66,15 @@ const Login = () => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('https://artbackend.pythonanywhere.com/api/login/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(values),
-        });
+        const API_URL = 'https://artbackend.pythonanywhere.com/api/login/';
+console.log(API_URL);
+
+const response = await fetch(API_URL, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(values),
+});
+
 
         const data = await response.json();
 
